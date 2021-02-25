@@ -27,6 +27,7 @@ tag_agencies = function(df){
     'AG22', 'NIFA', # Nat. Institute of Food and Ag.
     'AG34', 'APHIS', # animal plant health inspection service
     'VATA', 'VA',    # veterans health admin.
+    'AG16', 'NRCS',
   )
   
   # Use a join with specific agencies above, and also search
