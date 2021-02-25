@@ -26,8 +26,8 @@ fed_data %>%
   filter(!agency %in% c('Military','VA','NSF')) %>%
   filter(education %in% c('Masters','PhD')) %>%
   filter(pay_plan  %in% c('GS-09','GS-11','GS-12')) %>%
-  filter(year %in% 2018:2020) %>%
-  count(year, agency, pay_plan, perm_status) %>%
+  filter(year %in% 2018:2020) %>% 
+  count(year, agency, pay_plan, perm_status) %>% 
   group_by(agency, pay_plan, perm_status) %>%
   summarise(n = mean(n)) %>%
   ungroup() %>%
@@ -37,13 +37,14 @@ fed_data %>%
   scale_fill_manual(values=c('#009e73','grey30')) + 
   facet_wrap(~agency, scales='free') +
   theme_bw(10) +
-  theme(legend.position =  'right',
-        legend.direction = 'vertical',
-        legend.box       = 'horizontal',
+  theme(legend.position =  c(0.8,0.1),
+        legend.direction = 'horizontal',
+        legend.title = element_text(size=12),
+        legend.text = element_text(size=10),
         axis.text =  element_text(size=10, color='black'),
         axis.title.x = element_blank(),
         strip.background = element_blank(),
-        strip.text       = element_text(hjust=0)) +
+        strip.text       = element_text(size=14,hjust=0)) +
   labs(x='', y='Average Number of Employees 2018-2020', fill='Permananent\nStatus',
        subtitle = 'GS 9/11/12 Physical & Natural Science employees with an MS or PhD',
        caption='')
@@ -125,7 +126,7 @@ occupation_agency_totals = fed_data %>%
   as_tibble()
 
 
-build_occupation_figure = function(agency_list, legend_position, title=NA, x_axis){
+build_occupation_figure = function(agency_list, legend_position, title, x_axis){
   
   occupation_agency_totals %>%
     filter(agency %in% agency_list) %>%
@@ -136,24 +137,25 @@ build_occupation_figure = function(agency_list, legend_position, title=NA, x_axi
   theme_bw() +
   theme(legend.position =  legend_position,
         legend.direction = 'horizontal',
-        axis.text.x =  element_text(size=10, color='black'),
-        axis.text.y = element_text(size=8, color='black'),
+        axis.text.x =  element_text(size=5, color='black'),
+        axis.text.y = element_text(size=6, color='black'),
         strip.background = element_blank(),
         strip.text       = element_text(hjust=0, size=15)) +
   labs(x=x_axis, y='', fill='Permananent Status',
        subtitle = title,
-       caption='')
+       caption=waiver())
 }
 
 agencies = sample(unique(occupation_agency_totals$agency))
-top = build_occupation_figure(agencies[1:6], legend_position = 'none', title = 'GS 9/11/12 Physical & Natural Science employees with an MS or PhD',
+top = build_occupation_figure(agencies[1:6], legend_position = 'none', title = 'GS 9/11/12 Physical & Natural Science\nemployees with an MS or PhD',
                               x_axis = '') +
-  theme(plot.subtitle = element_text(size=25))
-middle = build_occupation_figure(agencies[7:12], legend_position = 'none', title = '',
+  theme(plot.subtitle = element_text(size=15))
+middle = build_occupation_figure(agencies[7:12], legend_position = 'none', title = waiver(),
                               x_axis = '') 
-bottom = build_occupation_figure(agencies[13:20], legend_position = 'bottom', title = '',
+bottom = build_occupation_figure(agencies[13:20], legend_position = 'bottom', title = waiver(),
                         x_axis = 'Average Number of Employees 2018-2020') +
-  theme(axis.title.x = element_text(size=20))
+  theme(axis.title.x = element_text(size=15))
 
-top + middle + bottom + plot_layout(ncol=1)
+giant_figure = top + middle + bottom + plot_layout(ncol=1)
 
+ggsave('./giant_occupation_count_figure.png', plot=giant_figure, width=20, height=60, units='cm', dpi=200)
