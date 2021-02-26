@@ -153,8 +153,8 @@ build_occupation_figure = function(agency_list, legend_position, title, x_axis){
   theme_bw() +
   theme(legend.position =  legend_position,
         legend.direction = 'horizontal',
-        axis.text.x =  element_text(size=5, color='black'),
-        axis.text.y = element_text(size=6, color='black'),
+        axis.text.x =  element_text(size=7, color='black'),
+        axis.text.y = element_text(size=7, color='black'),
         strip.background = element_blank(),
         strip.text       = element_text(hjust=0, size=15)) +
   labs(x=x_axis, y='', fill='Permananent Status',
