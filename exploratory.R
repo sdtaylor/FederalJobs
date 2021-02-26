@@ -12,6 +12,19 @@ filter_stuff = function(df){
       TRUE ~ FALSE                         # compare with GS
     )) %>%
   filter(keep) %>%
+  # Only keep the relevant social science once. droping things like "intelligence" and "workforce development"
+  mutate(keep = case_when(
+    occupation_desc == '0170-HISTORY' ~ TRUE,
+    occupation_desc == '0190-GENERAL ANTHROPOLOGY' ~ TRUE,
+    occupation_desc == '0188-RECREATION SPECIALIST' ~ TRUE,
+    occupation_desc == '0150-GEOGRAPHY' ~ TRUE,
+    occupation_desc == '0193-ARCHEOLOGY' ~ TRUE,
+    occupation_desc == '0110-ECONOMIST' ~ TRUE,
+    occupation_desc == '0184-SOCIOLOGY' ~ TRUE,
+    str_detect(occupation_desc, '01\\d{2}') ~ FALSE,
+    TRUE ~ TRUE,
+  )) %>%
+  filter(keep) %>%
   select(-keep)
 }
 
@@ -31,18 +44,20 @@ fed_data %>%
   group_by(agency, pay_plan, perm_status) %>%
   summarise(n = mean(n)) %>%
   ungroup() %>%
-  complete(agency,pay_plan,perm_status, fill=list(n=0)) %>%
+  complete(agency,pay_plan,perm_status, fill=list(n=0)) %>% 
   ggplot(aes(x=pay_plan, y=n, fill=perm_status)) +
   geom_col(position = position_dodge()) +
   scale_fill_manual(values=c('#009e73','grey30')) + 
-  facet_wrap(~agency, scales='free') +
+  facet_wrap(~agency, scales='free', ncol=3) +
   theme_bw(10) +
-  theme(legend.position =  c(0.8,0.1),
-        legend.direction = 'horizontal',
+  theme(legend.position =  c(0.8,0.08),
+        legend.direction = 'vertical',
         legend.title = element_text(size=12),
         legend.text = element_text(size=10),
         axis.text =  element_text(size=10, color='black'),
+        axis.title.y = element_text(size=16),
         axis.title.x = element_blank(),
+        plot.subtitle = element_text(size=16),
         strip.background = element_blank(),
         strip.text       = element_text(size=14,hjust=0)) +
   labs(x='', y='Average Number of Employees 2018-2020', fill='Permananent\nStatus',
@@ -118,7 +133,7 @@ occupation_agency_totals = fed_data %>%
   #filter(agency %in% c('APHIS','ARS','DOE','NASA','NIH','USGS')) %>%
   compress_some_occupations() %>%
   filter(year %in% 2018:2020) %>%
-  count(year, agency, occupation_desc,perm_status) %>% 
+  count(year, agency, occupation_desc,perm_status) %>%
   group_by(agency, occupation_desc,perm_status) %>%
   summarise(n = mean(n)) %>%
   ungroup() %>%
@@ -158,4 +173,4 @@ bottom = build_occupation_figure(agencies[13:20], legend_position = 'bottom', ti
 
 giant_figure = top + middle + bottom + plot_layout(ncol=1)
 
-ggsave('./giant_occupation_count_figure.png', plot=giant_figure, width=20, height=60, units='cm', dpi=200)
+ggsave('./giant_occupation_count_figure.png', plot=giant_figure, width=20, height=75, units='cm', dpi=200)

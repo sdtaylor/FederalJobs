@@ -82,10 +82,10 @@ load_raw_data = function(filepath){
            schedule = worksch, status = workstat, date=datecode, 
            employment = employment, avg_salary = salary, avg_length_of_service = los)
   
-  # physical (13XX) or natural science (04XX) fields GS7 or higher
+  # physical (13XX) or natural science (04XX) or social science (ie. geography, archeaology, 01XX) fields 
   # bring more descriptive fields too and return only the relevant ones
   main_data %>%
-    filter((str_detect(occupation_code, '04\\d{2}')) | (str_detect(occupation_code, '13\\d{2}'))) %>%
+    filter((str_detect(occupation_code, '04\\d{2}')) | (str_detect(occupation_code, '13\\d{2}')) | (str_detect(occupation_code, '01\\d{2}'))) %>%
     mutate(year = as.numeric(str_sub(date,1,4))) %>%
     mutate(appt_type = as.character(appt_type),
            avg_length_of_service = as.numeric(avg_length_of_service)) %>%
