@@ -39,7 +39,7 @@ summary_fig = fed_data %>%
   filter(!agency %in% c('Military','VA','NSF')) %>%
   filter(education %in% c('Masters','PhD')) %>%
   filter(pay_plan  %in% c('GS-09','GS-11','GS-12','ZP-02','ZP-03')) %>%
-  filter(year %in% 2018:2020) %>%
+  filter(year %in% 2020:2020) %>%
   count(year, agency, pay_plan, perm_status) %>%
   group_by(agency, pay_plan, perm_status) %>%
   summarise(n = mean(n)) %>%
@@ -175,3 +175,55 @@ bottom = build_occupation_figure(agencies[13:20], legend_position = 'bottom', ti
 giant_figure = top + middle + bottom + plot_layout(ncol=1)
 
 ggsave('./giant_occupation_count_figure.png', plot=giant_figure, width=20, height=75, units='cm', dpi=200)
+
+
+
+#-------------------------------
+# 
+library(sf)
+
+states = st_read('./data/gis/final_us_composite.geojson') %>%
+  mutate(state = tolower(name)) %>%
+  select(state) %>%
+  mutate(state = ifelse(state == 'united states virgin islands','virgin islands',state))
+
+state_outlier_boxes = st_read('./data/gis/outlier_bounding_boxes.geojson') %>%
+  mutate(state = tolower(name))%>%
+  mutate(state = ifelse(state == 'united states virgin islands','virgin islands',state))
+
+location_counts = fed_data %>%
+  filter(!is.na(perm_status)) %>%
+  filter(!agency %in% c('Military','VA','NSF')) %>%
+  filter(education %in% c('Masters','PhD')) %>%
+  filter(pay_plan  %in% c('GS-09','GS-11','GS-12','ZP-02','ZP-03')) %>%
+  filter(year %in% 2018:2020) %>%
+  count(year, agency, location) %>%
+  group_by(agency,location) %>%
+  summarise(n = mean(n)) %>%
+  ungroup() %>%  
+  complete(agency,location, fill=list(n=0)) %>% 
+  mutate(state = tolower(location))
+
+map_data = inner_join(states, location_counts, by='state')
+
+map_figure = ggplot(map_data) +
+  geom_sf(aes(fill=n), color='black', size=0.1) +
+  geom_sf(data=state_outlier_boxes, fill=NA, color='black', size=0.08) + 
+  scale_fill_viridis_c(limits=c(1,200), na.value = 'white', breaks=c(50,100,150,200), labels=c('50','100','150','200+')) +
+  facet_wrap(~agency, ncol=3) +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        strip.background = element_blank(),
+        strip.text = element_text(color='black', size=12, face = 'bold', hjust=0.1),
+        panel.grid = element_blank(),
+        plot.title = element_text(size=25, face='bold', hjust=0.5),
+        legend.position = 'bottom',
+        legend.direction = 'horizontal') +
+  labs(subtitle = 'GS 9/11/12 and ZP 2/3 Physical & Natural Science\nemployees with an MS or PhD') +
+  guides(fill=guide_colorbar(title = 'Average Number of Employees 2018-2020', title.position = 'top',
+                             barwidth = unit(75,'mm')))
+
+
+ggsave('./map_figure.png', plot=map_figure, width=20, height=30, units='cm', dpi=200)
