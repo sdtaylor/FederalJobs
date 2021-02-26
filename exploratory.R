@@ -8,8 +8,8 @@ filter_stuff = function(df){
   df %>%
     mutate(keep = case_when(
       str_detect(pay_plan, 'GS') ~ TRUE, 
-      str_detect(pay_plan, 'ZP') ~ FALSE,  # decent amount of ZP positions with NOAA and NIST but they are just too confusing to 
-      TRUE ~ FALSE                         # compare with GS
+      str_detect(pay_plan, 'ZP') ~ TRUE,  # decent amount of ZP positions with NOAA and NIST 
+      TRUE ~ FALSE                        
     )) %>%
   filter(keep) %>%
   # Only keep the relevant social science once. droping things like "intelligence" and "workforce development"
@@ -34,24 +34,24 @@ fed_data = read_csv('./data/processed_data.csv.gz') %>%
 #-------------------------------
 # Bar Plot of MS/PhD positions in GS-9/10/11/12 for 18-20
 #-------------------------------
-fed_data %>%
+summary_fig = fed_data %>%
   filter(!is.na(perm_status)) %>%
   filter(!agency %in% c('Military','VA','NSF')) %>%
   filter(education %in% c('Masters','PhD')) %>%
-  filter(pay_plan  %in% c('GS-09','GS-11','GS-12')) %>%
-  filter(year %in% 2018:2020) %>% 
-  count(year, agency, pay_plan, perm_status) %>% 
+  filter(pay_plan  %in% c('GS-09','GS-11','GS-12','ZP-02','ZP-03')) %>%
+  filter(year %in% 2018:2020) %>%
+  count(year, agency, pay_plan, perm_status) %>%
   group_by(agency, pay_plan, perm_status) %>%
   summarise(n = mean(n)) %>%
-  ungroup() %>%
+  ungroup() %>%  
   complete(agency,pay_plan,perm_status, fill=list(n=0)) %>% 
   ggplot(aes(x=pay_plan, y=n, fill=perm_status)) +
   geom_col(position = position_dodge()) +
   scale_fill_manual(values=c('#009e73','grey30')) + 
   facet_wrap(~agency, scales='free', ncol=3) +
   theme_bw(10) +
-  theme(legend.position =  c(0.8,0.08),
-        legend.direction = 'vertical',
+  theme(legend.position =  'bottom',
+        legend.direction = 'horizontal',
         legend.title = element_text(size=12),
         legend.text = element_text(size=10),
         axis.text =  element_text(size=10, color='black'),
@@ -61,9 +61,10 @@ fed_data %>%
         strip.background = element_blank(),
         strip.text       = element_text(size=14,hjust=0)) +
   labs(x='', y='Average Number of Employees 2018-2020', fill='Permananent\nStatus',
-       subtitle = 'GS 9/11/12 Physical & Natural Science employees with an MS or PhD',
+       subtitle = 'GS 9/11/12 and ZP 2/3 Physical & Natural Science employees\nwith an MS or PhD',
        caption='')
 
+ggsave('./summary_agency_count_figure.png', plot=summary_fig, width=25, height=40, units='cm', dpi=200)
 
 
 
@@ -129,8 +130,8 @@ occupation_agency_totals = fed_data %>%
   filter(!is.na(perm_status)) %>%
   filter(!agency %in% c('Military','VA','NSF')) %>%
   filter(education %in% c('Masters','PhD')) %>%
-  filter(pay_plan  %in% c('GS-09','GS-11','GS-12')) %>%
-  #filter(agency %in% c('APHIS','ARS','DOE','NASA','NIH','USGS')) %>%
+  filter(pay_plan  %in% c('GS-09','GS-11','GS-12','ZP-02','ZP-03')) %>%
+  #filter(agency %in% c('NIST','NOAA')) %>%
   compress_some_occupations() %>%
   filter(year %in% 2018:2020) %>%
   count(year, agency, occupation_desc,perm_status) %>%
@@ -162,7 +163,7 @@ build_occupation_figure = function(agency_list, legend_position, title, x_axis){
 }
 
 agencies = sample(unique(occupation_agency_totals$agency))
-top = build_occupation_figure(agencies[1:6], legend_position = 'none', title = 'GS 9/11/12 Physical & Natural Science\nemployees with an MS or PhD',
+top = build_occupation_figure(agencies[1:6], legend_position = 'none', title = 'GS 9/11/12 and ZP 2/3 Physical & Natural Science\nemployees with an MS or PhD',
                               x_axis = '') +
   theme(plot.subtitle = element_text(size=15))
 middle = build_occupation_figure(agencies[7:12], legend_position = 'none', title = waiver(),
