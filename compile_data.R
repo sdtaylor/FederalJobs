@@ -9,25 +9,33 @@ library(tidyverse)
 tag_agencies = function(df){
   # agency codes from from DTagy.txt
   agency_info = tribble(
-    ~agency_code, ~agency, 
-    'AG11', 'USFS',
-    'AG03', 'ARS',
-    'CM54', 'NOAA',
-    'IN05', 'BLM',
-    'IN08', 'USGS',
-    'IN10', 'NPS',
-    'IN15', 'USFWS',
-    'HE38', 'NIH',
-    'HE36', 'FDA',
-    'HE39', 'CDC',
-    'CM57', 'NIST', # Nat. Institute Standards and Technology
-    'NF00', 'NSF',
-    'DN00', 'DOE',
-    'EP00', 'EPA',
-    'AG22', 'NIFA', # Nat. Institute of Food and Ag.
-    'AG34', 'APHIS', # animal plant health inspection service
-    'VATA', 'VA',    # veterans health admin.
-    'AG16', 'NRCS',
+    ~agency_code, ~agency_acronym, ~agency,
+    'AG11',  'USFS',  'US Forest Service',
+    'AG03', 'ARS',    'Agricultural Research Servce',
+    'CM54', 'NOAA',   'Nat. Oceanic and Atmospheric Admin.',
+    'IN05', 'BLM',    'Bureau of Land Management',
+    'IN08', 'USGS',   'US Geological Survey',
+    'IN10', 'NPS',    'National Park Service',
+    'IN15', 'USFWS',  'US Fish & Wildlife Service',
+    'IN07', 'USBR',   'Bureau of Reclamation',
+    'IN06', 'BIA',    'Bureau of Indian Affairs',
+    'IN27', 'BOEM',   'Bureau of Ocean Energy Mgnt.',
+    'HE38', 'NIH',    'National Institute of Health',
+    'HE36', 'FDA',    'Food & Drug Administration',
+    'HE39', 'CDC',    'Centers for Disease Control',
+    'CM57', 'NIST',   'Nat. Institute of Stds. & Tech.',
+    'NF00', 'NSF',    'National Science Foundation',
+    'DN00', 'DOE',    'Department of Energy',
+    'EP00', 'EPA',    'Environmental Protection Agency',
+    'AG22', 'NIFA',   'Nat. Institute of Food & Ag.',
+    'AG34', 'APHIS',  'Animal/Plant Health Inspection Svc.',
+    'VATA', 'VA',     'Department of Veterans Affairs',
+    'AG16', 'NRCS',   'Nat. Resources Conservation Svc.',
+    'AG37', 'FSIS',   'Food Safety & Inspection Svc.',
+    'DLLS', 'BLS',    'Bureau of Labor Statistics',
+    'CM53', 'BEA',    'Bureau of Economic Analysis',
+    'HSBD', 'CBBP',   'Customs & Border Protection',
+    'SM03', 'Smith.', 'The Smithsonian',
   )
   
   # Use a join with specific agencies above, and also search
@@ -39,10 +47,18 @@ tag_agencies = function(df){
       str_detect(agency_code, 'NV') ~ 'Military',  # navy
       str_detect(agency_code, 'AF') ~ 'Military',  # air force
       str_detect(agency_code, 'AR') ~ 'Military',  # army
-      str_detect(agency_code, 'NN') ~ 'NASA',
+      str_detect(agency_code, 'DD') ~ 'Military',  # dod
+      str_detect(agency_code, 'DJ') ~ 'Military',  # dept. justice
+      str_detect(agency_code, 'NN') ~ 'Nat. Aeronautics & Space Adm.',
       TRUE ~ agency
     )) %>%
-    mutate(agency = ifelse(is.na(agency), 'Other', agency))
+    mutate(agency = ifelse(is.na(agency), 'Other', agency)) %>%
+    mutate(agency_acronym = case_when(
+      str_detect(agency_code, 'NN') ~ 'NASA',
+      agency == 'Other' ~ '',
+      agency == 'Military' ~ 'Mil',
+      TRUE ~ agency_acronym
+    ))
   
 }
 
@@ -94,7 +110,7 @@ load_raw_data = function(filepath){
     left_join(occupation_info, by='occupation_code') %>%
     left_join(appt_type_info, by='appt_type') %>% 
     left_join(location_info, by='location_code') %>%
-    select(year, agency, occupation_desc, pay_plan, avg_salary, avg_length_of_service, education, perm_status, location, employment)
+    select(year, agency_code,agency_acronym, agency, occupation_desc, pay_plan, avg_salary, avg_length_of_service, education, perm_status, location, employment)
 }
 
 raw_data_files = list.files('./data', pattern='FACTDATA*', full.names = T)
