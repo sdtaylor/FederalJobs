@@ -28,30 +28,32 @@ filter_stuff = function(df){
   select(-keep)
 }
 
-fed_data = read_csv('./data/processed_data.csv.gz') %>%
-  filter_stuff()
+fed_data = read_csv('./data/processed_data.csv.gz', col_types = cols(agency_acronym=col_character())) %>%
+  filter_stuff() %>%
+  mutate(agency_and_acronym = paste0(agency, ' (',agency_acronym,')')) %>%
+  mutate(agency_and_acronym = ifelse(agency=='Other','Other',agency_and_acronym))
 
 #-------------------------------
 # Bar Plot of MS/PhD positions in GS-9/10/11/12 for 18-20
 #-------------------------------
 summary_fig = fed_data %>%
   filter(!is.na(perm_status)) %>%
-  filter(!agency %in% c('Military','VA','NSF')) %>%
+  filter(!agency_acronym %in% c('Mil','CBBP','VA','NSF')) %>% 
   filter(education %in% c('Masters','PhD')) %>%
   filter(pay_plan  %in% c('GS-09','GS-11','GS-12','ZP-02','ZP-03')) %>%
-  filter(year %in% 2020:2020) %>%
-  count(year, agency, pay_plan, perm_status) %>%
-  group_by(agency, pay_plan, perm_status) %>%
+  filter(year %in% 2018:2020) %>%
+  count(year, agency_and_acronym, pay_plan, perm_status) %>%
+  group_by(agency_and_acronym, pay_plan, perm_status) %>%
   summarise(n = mean(n)) %>%
-  ungroup() %>%  
-  complete(agency,pay_plan,perm_status, fill=list(n=0)) %>% 
+  ungroup() %>% 
+  complete(agency_and_acronym,pay_plan,perm_status, fill=list(n=0)) %>% 
   ggplot(aes(x=pay_plan, y=n, fill=perm_status)) +
   geom_col(position = position_dodge()) +
   scale_fill_manual(values=c('#009e73','grey30')) + 
-  facet_wrap(~agency, scales='free', ncol=3) +
+  facet_wrap(~agency_and_acronym, scales='free', ncol=3) +
   theme_bw(10) +
-  theme(legend.position =  'bottom',
-        legend.direction = 'horizontal',
+  theme(legend.position =  c(0.6,0.03),
+        legend.direction = 'vertical',
         legend.title = element_text(size=12),
         legend.text = element_text(size=10),
         axis.text =  element_text(size=10, color='black'),
@@ -59,12 +61,12 @@ summary_fig = fed_data %>%
         axis.title.x = element_blank(),
         plot.subtitle = element_text(size=16),
         strip.background = element_blank(),
-        strip.text       = element_text(size=14,hjust=0)) +
+        strip.text       = element_text(size=10,hjust=0)) +
   labs(x='', y='Average Number of Employees 2018-2020', fill='Permananent\nStatus',
-       subtitle = 'GS 9/11/12 and ZP 2/3 Physical & Natural Science employees\nwith an MS or PhD',
+       subtitle = 'GS 9/11/12 and ZP 2/3 Social/Physical/Natural Science employees\nwith an MS or PhD',
        caption='')
 
-ggsave('./summary_agency_count_figure.png', plot=summary_fig, width=25, height=40, units='cm', dpi=200)
+ggsave('./summary_agency_count_figure.png', plot=summary_fig, width=28, height=40, units='cm', dpi=200)
 
 
 
