@@ -53,18 +53,20 @@ summary_fig = fed_data %>%
   facet_wrap(~agency_and_acronym, scales='free', ncol=3) +
   theme_bw(10) +
   theme(legend.position =  c(0.6,0.03),
-        legend.direction = 'vertical',
-        legend.title = element_text(size=12),
-        legend.text = element_text(size=10),
+        #legend.direction = 'vertical',
+        legend.title = element_text(size=22),
+        legend.text = element_text(size=18),
+        #legend.key.size = unit(10,'mm'),
         axis.text =  element_text(size=10, color='black'),
         axis.title.y = element_text(size=16),
         axis.title.x = element_blank(),
-        plot.subtitle = element_text(size=16),
+        plot.subtitle = element_text(size=20),
         strip.background = element_blank(),
-        strip.text       = element_text(size=10,hjust=0)) +
-  labs(x='', y='Average Number of Employees 2018-2020', fill='Permananent\nStatus',
+        strip.text       = element_text(size=11,hjust=0)) +
+  labs(x='', y='Average Number of Employees 2018-2020', fill='Permananent Status',
        subtitle = 'GS 9/11/12 and ZP 2/3 Social/Physical/Natural Science employees\nwith an MS or PhD',
-       caption='')
+       caption='') +
+  guides(fill=guide_legend(title.position = 'top', direction = 'horizontal', keywidth = unit(15,'mm')))
 
 ggsave('./summary_agency_count_figure.png', plot=summary_fig, width=28, height=40, units='cm', dpi=200)
 
@@ -206,4 +208,4 @@ map_figure = ggplot(map_data) +
                              barwidth = unit(85,'mm')))
 
 
-ggsave('./map_figure.png', plot=map_figure, width=18, height=40, units='cm', dpi=200)
+ggsave('./map_figure.png', plot=map_figure, width=18, height=40, units='cm', dpi=150)
