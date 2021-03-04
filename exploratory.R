@@ -130,14 +130,14 @@ compress_some_occupations = function(df){
 
 occupation_agency_totals = fed_data %>%
   filter(!is.na(perm_status)) %>%
-  filter(!agency %in% c('Military','VA','NSF')) %>%
+  filter(!agency_acronym %in% c('Mil','CBBP','VA','NSF')) %>% 
   filter(education %in% c('Masters','PhD')) %>%
   filter(pay_plan  %in% c('GS-09','GS-11','GS-12','ZP-02','ZP-03')) %>%
   #filter(agency %in% c('NIST','NOAA')) %>%
   compress_some_occupations() %>%
   filter(year %in% 2018:2020) %>%
-  count(year, agency, occupation_desc,perm_status) %>%
-  group_by(agency, occupation_desc,perm_status) %>%
+  count(year, agency,agency_acronym, occupation_desc,perm_status) %>%
+  group_by(agency,agency_acronym, occupation_desc,perm_status) %>%
   summarise(n = mean(n)) %>%
   ungroup() %>%
   #complete(agency,occupation_desc,perm_status, fill=list(n=0)) %>%
@@ -151,32 +151,33 @@ build_occupation_figure = function(agency_list, legend_position, title, x_axis){
   ggplot(aes(y=str_wrap(occupation_desc,25), x=n, fill=perm_status)) +
   geom_col() +
   scale_fill_manual(values=c('#009e73','grey30')) +
-  facet_grid(~agency, scales='free') +
+  facet_grid(~str_wrap(agency,18), scales='free_x') +
   theme_bw() +
   theme(legend.position =  legend_position,
         legend.direction = 'horizontal',
         axis.text.x =  element_text(size=7, color='black'),
         axis.text.y = element_text(size=7, color='black'),
         strip.background = element_blank(),
-        strip.text       = element_text(hjust=0, size=15)) +
+        strip.text       = element_text(hjust=0, size=11)) +
   labs(x=x_axis, y='', fill='Permananent Status',
        subtitle = title,
        caption=waiver())
 }
 
-agencies = sample(unique(occupation_agency_totals$agency))
-top = build_occupation_figure(agencies[1:6], legend_position = 'none', title = 'GS 9/11/12 and ZP 2/3 Physical & Natural Science\nemployees with an MS or PhD',
+agencies = unique(occupation_agency_totals$agency)
+top = build_occupation_figure(agencies[1:9], legend_position = 'none', title = 'GS 9/11/12 and ZP 2/3 Social/Physical/Natural Science employees with an MS or PhD',
                               x_axis = '') +
   theme(plot.subtitle = element_text(size=15))
-middle = build_occupation_figure(agencies[7:12], legend_position = 'none', title = waiver(),
+
+middle = build_occupation_figure(agencies[10:18], legend_position = 'none', title = waiver(),
                               x_axis = '') 
-bottom = build_occupation_figure(agencies[13:20], legend_position = 'bottom', title = waiver(),
+bottom = build_occupation_figure(agencies[19:28], legend_position = 'bottom', title = waiver(),
                         x_axis = 'Average Number of Employees 2018-2020') +
   theme(axis.title.x = element_text(size=15))
 
 giant_figure = top + middle + bottom + plot_layout(ncol=1)
 
-ggsave('./giant_occupation_count_figure.png', plot=giant_figure, width=20, height=75, units='cm', dpi=200)
+ggsave('./giant_occupation_count_figure.png', plot=giant_figure, width=37, height=75, units='cm', dpi=150)
 
 
 
