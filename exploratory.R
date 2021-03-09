@@ -1,6 +1,9 @@
 library(tidyverse)
 library(patchwork)
 
+#-------------------------------
+# Create the 3 figures showing federal employment among graduate degree holders.
+#-------------------------------
 
 filter_stuff = function(df){
   # there's literally hundreds of pay plans, so just keep the primary
@@ -159,7 +162,8 @@ ggsave('./giant_occupation_count_figure.png', plot=giant_figure, width=25, heigh
 
 
 #-------------------------------
-# 
+# map figure
+#-------------------------------
 library(sf)
 
 states = st_read('./data/gis/final_us_composite.geojson') %>%
