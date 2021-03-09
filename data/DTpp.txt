@@ -1,0 +1,6 @@
+PP_AGG,PP_AGGT,PP,PPT
+1,SES/SL/ST (Aggregate),ES,ES-Senior Executive Service (SES)
+1,SES/SL/ST (Aggregate),SL,SL-Senior Level Positions
+1,SES/SL/ST (Aggregate),ST,ST-Scientific and Professional
+2,All Other Pay Plans,99,All Other Pay Plans
+3,Unspecified,**,Unspecified
