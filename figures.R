@@ -159,7 +159,20 @@ giant_figure = top + middle1 + middle2 + middle3 + bottom + plot_layout(ncol=1)
 
 ggsave('./giant_occupation_count_figure.png', plot=giant_figure, width=25, height=110, units='cm', dpi=150)
 
-
+# as separate figures
+n_splits = 5
+for(i in 1:n_splits){
+  # agency groupings 1-5, 6-10, etc
+  end =  i*n_splits
+  start = end - n_splits + 1
+  fig = build_occupation_figure(agencies[start:end], legend_position = 'bottom', title = 'GS 9/11/12 and ZP 2/3 Social/Physical/Natural Science\nemployees with an MS or PhD',
+                          x_axis = '') +
+        theme(plot.subtitle = element_text(size=15))
+  
+  fig_filename = paste0('./occupation_figure_',i,'_of_5.png')
+  ggsave(fig_filename, plot=fig, width=25, height=22, units='cm', dpi=100)
+  
+}
 
 #-------------------------------
 # map figure
