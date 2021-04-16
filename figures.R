@@ -201,12 +201,17 @@ location_counts = fed_data %>%
   complete(agency_and_acronym,location, fill=list(n=0)) %>% 
   mutate(state = tolower(location))
 
+job_count_bins         = c(0,50,100,200)
+job_count_bin_labels   = c('<50', '50-100','100+')
+location_counts$n = cut(location_counts$n, job_count_bins, job_count_bin_labels)
+
 map_data = inner_join(states, location_counts, by='state')
 
 map_figure = ggplot(map_data) +
   geom_sf(aes(fill=n), color='black', size=0.1) +
   geom_sf(data=state_outlier_boxes, fill=NA, color='grey40', size=0.08) + 
-  scale_fill_viridis_c(limits=c(1,200), na.value = 'white', breaks=c(50,100,150,200), labels=c('50','100','150','200+')) +
+  #scale_fill_viridis_c(limits=c(1,200), na.value = 'white', breaks=c(50,100,150,200), labels=c('50','100','150','200+')) +
+  scale_fill_manual(values = c('#bae4bc','#4eb3d3','#084081'), na.value='grey95', na.translate=F) +
   facet_wrap(~str_wrap(agency_and_acronym,25), ncol=3) +
   theme(axis.text = element_blank(),
         axis.ticks = element_blank(),
@@ -221,8 +226,8 @@ map_figure = ggplot(map_data) +
         legend.position = c(0.7, 0.05),
         legend.direction = 'horizontal') +
   labs(subtitle = 'GS 9/11/12 and ZP 2/3 Social/Physical/Natural Science employees with an MS or PhD') +
-  guides(fill=guide_colorbar(title = 'Average Number of Employees 2018-2020', title.position = 'top',
-                             barwidth = unit(85,'mm')))
+  guides(fill=guide_legend(title = 'Average Number of Employees 2018-2020', title.position = 'top',
+                             label.position = 'top', keywidth = unit(10,'mm')))
 
 
 ggsave('./map_figure.png', plot=map_figure, width=18, height=40, units='cm', dpi=150)
