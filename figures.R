@@ -207,27 +207,41 @@ location_counts$n = cut(location_counts$n, job_count_bins, job_count_bin_labels)
 
 map_data = inner_join(states, location_counts, by='state')
 
-map_figure = ggplot(map_data) +
+build_map_figure = function(agency_list, legend_position, title=NA){
+  map_data %>%
+    filter(agency_and_acronym %in% agency_list) %>%
+  ggplot() +
   geom_sf(aes(fill=n), color='black', size=0.1) +
   geom_sf(data=state_outlier_boxes, fill=NA, color='grey40', size=0.08) + 
-  #scale_fill_viridis_c(limits=c(1,200), na.value = 'white', breaks=c(50,100,150,200), labels=c('50','100','150','200+')) +
-  scale_fill_manual(values = c('#bae4bc','#4eb3d3','#084081'), na.value='grey95', na.translate=F) +
+  scale_fill_manual(values = c('#bae4bc','#4eb3d3','#084081'), breaks = job_count_bin_labels, na.value='grey95') +
   facet_wrap(~str_wrap(agency_and_acronym,25), ncol=3) +
   theme(axis.text = element_blank(),
         axis.ticks = element_blank(),
         panel.border = element_blank(),
         panel.background = element_blank(),
         strip.background = element_blank(),
-        strip.text = element_text(color='black', size=10, hjust=0.1),
+        strip.text = element_text(color='black', size=12, hjust=0.1),
         panel.grid = element_blank(),
-        plot.title = element_text(size=24, face='bold', hjust=0.5),
+        plot.title = element_text(size=11, face='bold', hjust=0),
         legend.title = element_text(size=14),
         legend.text = element_text(size=12),
-        legend.position = c(0.7, 0.05),
+        #legend.position = c(0.7, 0.05),
+        legend.position = legend_position,
         legend.direction = 'horizontal') +
-  labs(subtitle = 'GS 9/11/12 and ZP 2/3 Social/Physical/Natural Science employees with an MS or PhD') +
-  guides(fill=guide_legend(title = 'Average Number of Employees 2018-2020', title.position = 'top',
+  labs(title = 'GS 9/11/12 and ZP 2/3 Social/Physical/Natural Science employees with an MS or PhD') +
+  guides(fill=guide_legend(title = 'Average Number of\nEmployees 2018-2020', title.position = 'top',
                              label.position = 'top', keywidth = unit(10,'mm')))
 
+}
+agencies = unique(location_counts$agency_and_acronym)
+agencies = agencies[agencies!='Other'] # Need to drop 1 map for evenly spaced figures
 
-ggsave('./map_figure.png', plot=map_figure, width=18, height=40, units='cm', dpi=150)
+# Order them so NOAA, at postiion 17, is in the top map, cause no other ones in the top map have the 100+ fill color.
+top_maps    = build_map_figure(agencies[c(1:7,17)], legend_position = c(0.85,0.15))
+middle_maps = build_map_figure(agencies[9:16], legend_position = c(0.85,0.15))
+bottom_maps = build_map_figure(agencies[c(8,18:24)], legend_position = c(0.85,0.15))
+
+ggsave('./map_figure_1_of_3.png', plot=top_maps, width=18, height=15, units='cm', dpi=150)
+ggsave('./map_figure_2_of_3.png', plot=middle_maps, width=18, height=15, units='cm', dpi=150)
+ggsave('./map_figure_3_of_3.png', plot=bottom_maps, width=18, height=15, units='cm', dpi=150)
+
