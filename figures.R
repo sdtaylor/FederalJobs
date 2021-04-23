@@ -170,7 +170,7 @@ for(i in 1:n_splits){
         theme(plot.subtitle = element_text(size=15))
   
   fig_filename = paste0('./occupation_figure_',i,'_of_5.png')
-  ggsave(fig_filename, plot=fig, width=25, height=22, units='cm', dpi=100)
+  ggsave(fig_filename, plot=fig, width=25, height=22, units='cm', dpi=250)
   
 }
 
@@ -241,7 +241,7 @@ top_maps    = build_map_figure(agencies[c(1:7,17)], legend_position = c(0.85,0.1
 middle_maps = build_map_figure(agencies[9:16], legend_position = c(0.85,0.15))
 bottom_maps = build_map_figure(agencies[c(8,18:24)], legend_position = c(0.85,0.15))
 
-ggsave('./map_figure_1_of_3.png', plot=top_maps, width=18, height=15, units='cm', dpi=150)
-ggsave('./map_figure_2_of_3.png', plot=middle_maps, width=18, height=15, units='cm', dpi=150)
-ggsave('./map_figure_3_of_3.png', plot=bottom_maps, width=18, height=15, units='cm', dpi=150)
+ggsave('./map_figure_1_of_3.png', plot=top_maps, width=18, height=15, units='cm', dpi=250)
+ggsave('./map_figure_2_of_3.png', plot=middle_maps, width=18, height=15, units='cm', dpi=250)
+ggsave('./map_figure_3_of_3.png', plot=bottom_maps, width=18, height=15, units='cm', dpi=250)
 
